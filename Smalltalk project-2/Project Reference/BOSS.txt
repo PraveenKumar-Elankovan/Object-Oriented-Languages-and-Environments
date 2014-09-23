@@ -1,0 +1,75 @@
+
+BOSS package of Cincom Smalltalk
+
+This is information on the BOSS capability of Cincom Smalltalk.  BOSS
+implements a rudimentary version of "persistent objects", complex
+objects that are saved to a file and retrieved in subsequent Smalltalk
+sessions.
+
+In brief, BOSS works with Smalltalk "Stream" instances whose
+underlying "SequenceableCollection" is a "ByteArray".  Stream operations
+allow you to store (or retrieve) one (possibly complex) object at a
+time.  The streams should only be handled within the capabilities of
+the BOSS subsystem, because BOSS uses a special binary format which
+you should not manipulate directly.
+
+Here is a quick rundown of the BOSS subsystem.  BOSS is represented by
+the class "BinaryObjectStorage", a subclass of "Object".  To create
+instances of this class use one of the following (class) messages:
+
+1. onNew: <file_stream>
+
+2. onOld: <file_stream>
+
+3. onOldNoScan: <file_stream>
+
+Message (1) above is used to create a new file (allegedly to write to
+the file); (2) is used to read from an existing file, or to append
+information at the end of the file; and (3) is used for files that mix
+BOSS generated information with other information.  You should
+probably avoid using (3).
+
+Instances of "BinaryObjectStorage" respond to most, but not all of the
+usual Stream messages discussed in Drake's book.  Here a sample of
+messages that are actually supported: atEnd, contents, next, nextPut:,
+nextPutAll:, reset, setToEnd.
+
+So, to write an object to a file, you should first create an instance
+of a "writeStream" to the file, for instance, by using the message
+expression:
+
+outStream := (Filename named: 'foobar.st') writeStream.
+
+Then, create a new instance of "BinaryObjectStorage", e.g., by:
+
+outBOS := BinaryObjectStorage onNew: outStream.
+
+Finally, writeout an object by appending it to the new BOS instance:
+
+outBOS nextPut: aComplexObject.
+
+This should allow you to save complex objects, like food items.  Note
+that, in some cases, the object isn't saved until you have closed the
+BOS instance (e.g., by sending the message "outBOS close.")  In this
+case, the object would be temporarily stored in visual.changes.
+
+To retrieve a complex object, do the same, mutatis mutandis (after
+changing what's to be changed).
+
+inStream := (Filename named: 'foobar.st') readStream.
+inBOS := BinaryObjectStorage onOld: inStream.
+aComplexObject := inBOS next.
+
+Similar code can be used to save and retrieve a class (with related
+methods) or a set of classes, rather than an object or a set of
+objects.
+
+I have successfully tried the code above on many objects; however,
+BOSS will not work with graphic handles.  Thus, make sure that objects
+you are saving do not contain direct or indirect references to graphic
+handles.
+
+Ugo Buy
+
+
+
